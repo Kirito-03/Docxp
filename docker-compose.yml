@@ -1,0 +1,62 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: docxp-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: docxp
+      POSTGRES_PASSWORD: docxp_secret_2024
+      POSTGRES_DB: docxp_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - docxp_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docxp -d docxp_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: docxp-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://docxp:docxp_secret_2024@db:5432/docxp_db
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_BASE_URL=https://api.deepseek.com
+      - DEEPSEEK_MODEL=deepseek-chat
+    volumes:
+      - ./backend:/app
+      - docxp_uploads:/app/uploads
+      - docxp_generated:/app/generated
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: docxp-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  docxp_pgdata:
+  docxp_uploads:
+  docxp_generated:

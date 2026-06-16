@@ -1,0 +1,187 @@
+/* ============================================
+   Docxp — Global Styles & CSS Variables
+   Cyberpunk Dark Theme (Black + Red)
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* === CSS Custom Properties === */
+:root {
+  --docxp-red: #DC2626;
+  --docxp-red-dark: #991B1B;
+  --docxp-red-light: #FF4444;
+  --docxp-red-glow: rgba(220, 38, 38, 0.4);
+  --docxp-black: #0A0A0A;
+  --docxp-black-light: #111111;
+  --docxp-gray-900: #141414;
+  --docxp-gray-800: #1A1A1A;
+  --docxp-gray-700: #2A2A2A;
+  --docxp-gray-600: #444444;
+  --docxp-gray-400: #666666;
+  --docxp-gray-300: #999999;
+  --docxp-text: #E8E8E8;
+  --docxp-text-dim: #999999;
+  --docxp-border: #1F1F1F;
+  --docxp-glow: 0 0 20px rgba(220, 38, 38, 0.3);
+  --docxp-glow-subtle: 0 0 10px rgba(220, 38, 38, 0.15);
+}
+
+/* === Reset & Base === */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--docxp-black);
+  color: var(--docxp-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(220, 38, 38, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(220, 38, 38, 0.02) 0%, transparent 50%);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* === Scrollbar Cyberpunk === */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--docxp-black);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--docxp-gray-700);
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--docxp-red);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--docxp-black);
+}
+
+/* === Selection === */
+::selection {
+  background: rgba(220, 38, 38, 0.3);
+  color: #ffffff;
+}
+
+/* === Links === */
+a {
+  color: var(--docxp-red);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--docxp-red-light);
+}
+
+/* === Code === */
+code, pre {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* === Utility Classes === */
+.docxp-glow {
+  box-shadow: var(--docxp-glow);
+}
+
+.docxp-glow-text {
+  text-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+}
+
+.docxp-border-glow {
+  border: 1px solid var(--docxp-red);
+  box-shadow: var(--docxp-glow-subtle);
+}
+
+.docxp-card {
+  background: var(--docxp-black-light);
+  border: 1px solid var(--docxp-border);
+  border-radius: 4px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.docxp-card:hover {
+  border-color: var(--docxp-gray-700);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* === Page Transitions === */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* === Ant Design Overrides (edge cases) === */
+.ant-layout {
+  background: var(--docxp-black) !important;
+}
+
+.ant-layout-sider {
+  border-right: 1px solid var(--docxp-border) !important;
+}
+
+.ant-card {
+  transition: transform 0.2s ease, box-shadow 0.3s ease !important;
+}
+
+.ant-card:hover {
+  transform: translateY(-2px);
+}
+
+.ant-btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.ant-btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.ant-btn-primary:hover::after {
+  transform: translateX(100%);
+}
+
+/* === Empty state enhancement === */
+.ant-empty-description {
+  color: var(--docxp-gray-400) !important;
+}
+
+/* === Loading states === */
+.ant-spin-dot-item {
+  background-color: var(--docxp-red) !important;
+}

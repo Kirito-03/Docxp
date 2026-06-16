@@ -1,0 +1,116 @@
+/* Docxp — Template Mapper Styles */
+
+.docxp-mapper-layout {
+  display: flex;
+  height: 450px;
+  border: 1px solid var(--docxp-border);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--docxp-black);
+}
+
+/* === Sidebar === */
+.docxp-mapper-sidebar {
+  width: 260px;
+  background: var(--docxp-black-light);
+  border-right: 1px solid var(--docxp-border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.docxp-rule-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--docxp-border) !important;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  padding: 8px !important;
+  transition: all 0.2s ease;
+}
+
+.docxp-rule-item:hover {
+  border-color: var(--docxp-gray-700) !important;
+}
+
+/* === Main Viewer === */
+.docxp-mapper-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.docxp-mapper-toolbar {
+  padding: 8px 16px;
+  background: var(--docxp-gray-900);
+  border-bottom: 1px solid var(--docxp-border);
+}
+
+.docxp-mapper-viewer-container {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  padding: 24px;
+  background: var(--docxp-black);
+}
+
+.docxp-mapper-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--docxp-gray-500);
+  font-style: italic;
+}
+
+/* HTML renderizado por mammoth */
+.docxp-mapper-viewer {
+  background: #111;
+  padding: 32px;
+  border-radius: 4px;
+  min-height: 100%;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+  color: var(--docxp-gray-300);
+  font-family: serif;
+  line-height: 1.6;
+}
+
+.docxp-mapper-viewer p {
+  margin-bottom: 1em;
+}
+
+.docxp-mapper-viewer ::selection {
+  background: rgba(220, 38, 38, 0.4);
+  color: #fff;
+}
+
+/* === Floating Popover === */
+.docxp-mapper-popover {
+  position: absolute;
+  transform: translateX(-50%);
+  background: var(--docxp-gray-900);
+  border: 1px solid var(--docxp-red);
+  padding: 12px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 10px rgba(220, 38, 38, 0.2);
+  z-index: 100;
+  pointer-events: auto;
+}
+
+.docxp-mapper-popover .popover-arrow {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px;
+  height: 10px;
+  background: var(--docxp-gray-900);
+  border-right: 1px solid var(--docxp-red);
+  border-bottom: 1px solid var(--docxp-red);
+}
+
+.docxp-error-text {
+  color: var(--docxp-red);
+}

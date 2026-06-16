@@ -1,0 +1,32 @@
+/* Docxp — Excel Uploader Styles */
+
+.docxp-dragger {
+  border-color: var(--docxp-gray-700) !important;
+  background: var(--docxp-black-light) !important;
+  border-radius: 4px !important;
+  transition: border-color 0.3s, box-shadow 0.3s !important;
+}
+
+.docxp-dragger:hover {
+  border-color: var(--docxp-red) !important;
+  box-shadow: var(--docxp-glow-subtle) !important;
+}
+
+.docxp-dragger .ant-upload-drag-container {
+  padding: 32px 16px;
+}
+
+.docxp-excel-result {
+  background: var(--docxp-black-light) !important;
+  border-color: var(--docxp-border) !important;
+}
+
+.docxp-excel-table .ant-table {
+  background: transparent !important;
+}
+
+.docxp-excel-table .ant-table-thead > tr > th {
+  font-size: 12px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
