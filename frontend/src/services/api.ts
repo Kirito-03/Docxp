@@ -82,6 +82,10 @@ export const deleteTemplate = async (id: string): Promise<void> => {
   await api.delete(`/templates/${id}`);
 };
 
+export const downloadTemplate = (id: string): string => {
+  return `${api.defaults.baseURL}/templates/${id}/download`;
+};
+
 export const getTemplateVariables = async (
   id: string
 ): Promise<{ template_id: string; variables: string[] }> => {

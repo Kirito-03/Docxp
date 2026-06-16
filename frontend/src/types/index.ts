@@ -60,6 +60,8 @@ export interface DocumentListResponse {
 
 export interface FieldFormat {
   zfill?: number;
+  counter_start?: number;
+  counter_step?: number;
 }
 
 export interface GenerateRequest {

@@ -21,12 +21,16 @@ from app.services.template_service import TemplateService
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
 
-def apply_field_format(value: str, fmt: FieldFormat | None) -> str:
+def apply_field_format(value: str, fmt: FieldFormat | None, idx: int = 0) -> str:
     """Apply formatting rules to a string value before injecting into template."""
     if fmt is None:
         return value
+    # Si es un contador, el valor se calcula a partir del índice de fila
+    if fmt.counter_start is not None:
+        step = fmt.counter_step if fmt.counter_step is not None else 1
+        value = str(fmt.counter_start + idx * step)
+    # Aplicar zfill después (compatible con contador + zfill combinados)
     if fmt.zfill is not None and fmt.zfill > 0:
-        # Preserve only the numeric part for zfill, then pad
         value = value.zfill(fmt.zfill)
     return value
 
@@ -327,9 +331,13 @@ async def batch_generate_document(
             # Build context. `custom_fields_dict` contains mapping from template variable to Excel column name
             row_context = {}
             for var_name, col_name in custom_fields_dict.items():
-                raw = str(row[col_name]) if col_name in row else col_name
                 fmt = field_formats_dict.get(var_name)
-                row_context[var_name] = apply_field_format(raw, fmt)
+                # Si es contador, el valor de la columna se ignora; apply_field_format lo calcula
+                if fmt and fmt.counter_start is not None:
+                    raw = ""  # ignorado, el fmt.counter_start define el valor
+                else:
+                    raw = str(row[col_name]) if col_name in row else col_name
+                row_context[var_name] = apply_field_format(raw, fmt, idx)
                     
             template_context = {
                 "titulo": title,

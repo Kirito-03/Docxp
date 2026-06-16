@@ -25,8 +25,9 @@ import {
   UploadOutlined,
   FileTextOutlined,
   RobotOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
-import { getTemplates, createTemplate, deleteTemplate } from '../services/api';
+import { getTemplates, createTemplate, deleteTemplate, downloadTemplate } from '../services/api';
 import type { Template, TemplateCategory, ReplacementRule } from '../types';
 import type { UploadFile } from 'antd/es/upload';
 import TemplateMapper from '../components/TemplateEditor/TemplateMapper';
@@ -171,21 +172,34 @@ export default function Templates() {
     {
       title: '',
       key: 'actions',
-      width: 60,
+      width: 90,
       render: (_: unknown, record: Template) => (
-        <Popconfirm
-          title="¿Eliminar esta plantilla?"
-          onConfirm={() => handleDelete(record.id)}
-          okText="Sí"
-          cancelText="No"
-        >
-          <Button
-            type="text"
-            danger
-            icon={<DeleteOutlined />}
-            size="small"
-          />
-        </Popconfirm>
+        <Space size={4}>
+          <a
+            href={downloadTemplate(record.id)}
+            download
+            title="Descargar plantilla .docx"
+          >
+            <Button
+              type="text"
+              icon={<DownloadOutlined style={{ color: '#22C55E' }} />}
+              size="small"
+            />
+          </a>
+          <Popconfirm
+            title="¿Eliminar esta plantilla?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Sí"
+            cancelText="No"
+          >
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              size="small"
+            />
+          </Popconfirm>
+        </Space>
       ),
     },
   ];

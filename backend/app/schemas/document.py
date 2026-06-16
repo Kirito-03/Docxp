@@ -6,9 +6,8 @@ from pydantic import BaseModel, Field
 class FieldFormat(BaseModel):
     """Formatting rules for a single template variable."""
     zfill: int | None = Field(default=None, description="Pad with leading zeros to this total width")
-    # Aquí se pueden agregar más tipos de formato en el futuro:
-    # upper: bool | None = None
-    # prefix: str | None = None
+    counter_start: int | None = Field(default=None, description="Auto-increment counter starting at this value")
+    counter_step: int | None = Field(default=1, description="Step between counter values (default 1)")
 
 
 class DocumentBase(BaseModel):

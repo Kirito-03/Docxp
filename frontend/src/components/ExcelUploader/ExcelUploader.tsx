@@ -2,15 +2,17 @@
  * Docxp — Excel File Uploader Component
  */
 import { useState, useEffect } from 'react';
-import { Upload, Typography, Tag, Space, Card, message, Divider, Row, Col, Select, Input, Radio, Popover, InputNumber, Tooltip } from 'antd';
-import { InboxOutlined, CheckCircleOutlined, LinkOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons';
+import { Upload, Typography, Tag, Space, Card, message, Divider, Row, Col, Select, Input, Radio, Popover, InputNumber, Tooltip, Flex } from 'antd';
+import { InboxOutlined, CheckCircleOutlined, LinkOutlined, EditOutlined, SettingOutlined, NumberOutlined } from '@ant-design/icons';
 import './ExcelUploader.css';
 
 const { Dragger } = Upload;
 const { Text } = Typography;
 
 export interface FieldFormat {
-  zfill?: number; // Relleno con ceros a la izquierda
+  zfill?: number;         // Relleno con ceros a la izquierda
+  counter_start?: number; // Valor inicial del contador auto-incrementable
+  counter_step?: number;  // Incremento entre filas (default 1)
 }
 
 interface ExcelUploaderProps {
@@ -176,11 +178,14 @@ export default function ExcelUploader({
                     onChange={(e) => handleModeChange(variable, e.target.value)}
                     style={{ width: '100%', display: 'flex' }}
                   >
-                    <Radio.Button value="excel" style={{ flex: 1, textAlign: 'center' }}>
-                      <LinkOutlined /> Columna
+                    <Radio.Button value="excel" style={{ flex: 1, textAlign: 'center', fontSize: 12 }}>
+                      <LinkOutlined /> Excel
                     </Radio.Button>
-                    <Radio.Button value="manual" style={{ flex: 1, textAlign: 'center' }}>
+                    <Radio.Button value="manual" style={{ flex: 1, textAlign: 'center', fontSize: 12 }}>
                       <EditOutlined /> Manual
+                    </Radio.Button>
+                    <Radio.Button value="contador" style={{ flex: 1, textAlign: 'center', fontSize: 12 }}>
+                      <NumberOutlined /> Contador
                     </Radio.Button>
                   </Radio.Group>
                 ) : (
@@ -191,7 +196,97 @@ export default function ExcelUploader({
               </Col>
 
               <Col xs={24} sm={11}>
-                {mode === 'excel' && hasExcel ? (
+                {mode === 'contador' ? (
+                  /* ── MODO CONTADOR ─────────────────────────────────── */
+                  <Flex gap={8} align="center">
+                    <div style={{ flex: 1 }}>
+                      <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 2 }}>Nº inicio</Text>
+                      <InputNumber
+                        min={0}
+                        placeholder="Ej: 100"
+                        value={fieldFormats[variable]?.counter_start ?? undefined}
+                        onChange={(val) => {
+                          if (onFieldFormatChange) {
+                            const newFmt: FieldFormat = { ...fieldFormats[variable] };
+                            if (val !== null && val !== undefined) {
+                              newFmt.counter_start = val as number;
+                            } else {
+                              delete newFmt.counter_start;
+                            }
+                            onFieldFormatChange(variable, newFmt);
+                          }
+                        }}
+                        style={{ width: '100%' }}
+                        size="large"
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 2 }}>Paso (+N)</Text>
+                      <InputNumber
+                        min={1}
+                        placeholder="Ej: 1"
+                        value={fieldFormats[variable]?.counter_step ?? 1}
+                        onChange={(val) => {
+                          if (onFieldFormatChange) {
+                            const newFmt: FieldFormat = { ...fieldFormats[variable] };
+                            newFmt.counter_step = (val as number) ?? 1;
+                            onFieldFormatChange(variable, newFmt);
+                          }
+                        }}
+                        style={{ width: '100%' }}
+                        size="large"
+                      />
+                    </div>
+                    {/* zfill también disponible para contador */}
+                    <Popover
+                      trigger="click"
+                      title={<Space><SettingOutlined /><span>Formato adicional</span></Space>}
+                      content={
+                        <div style={{ width: 220 }}>
+                          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
+                            Ceros a la izquierda (zfill)
+                          </Text>
+                          <InputNumber
+                            min={0} max={20}
+                            placeholder="Ancho total (ej. 7)"
+                            value={fieldFormats[variable]?.zfill ?? undefined}
+                            onChange={(val) => {
+                              if (onFieldFormatChange) {
+                                const newFmt: FieldFormat = { ...fieldFormats[variable] };
+                                if (val && (val as number) > 0) {
+                                  newFmt.zfill = val as number;
+                                } else { delete newFmt.zfill; }
+                                onFieldFormatChange(variable, newFmt);
+                              }
+                            }}
+                            style={{ width: '100%' }}
+                            addonAfter="dígitos"
+                          />
+                          {fieldFormats[variable]?.zfill && (
+                            <Text type="secondary" style={{ fontSize: 11, marginTop: 6, display: 'block' }}>
+                              Ej: <code style={{ color: '#22C55E' }}>
+                                {String(fieldFormats[variable]?.counter_start ?? 1).padStart(fieldFormats[variable]!.zfill!, '0')}
+                              </code>
+                            </Text>
+                          )}
+                        </div>
+                      }
+                    >
+                      <Tooltip title="Ceros a la izquierda">
+                        <button style={{
+                          background: fieldFormats[variable]?.zfill ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.05)',
+                          border: `1px solid ${fieldFormats[variable]?.zfill ? '#22C55E' : '#333'}`,
+                          borderRadius: 6, padding: '0 10px', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', height: 40,
+                          color: fieldFormats[variable]?.zfill ? '#22C55E' : '#888', fontSize: 16,
+                        }}>
+                          <SettingOutlined />
+                        </button>
+                      </Tooltip>
+                    </Popover>
+                  </Flex>
+                ) : mode === 'excel' && hasExcel ? (
+                  /* ── MODO EXCEL ─────────────────────────────────────── */
                   <Space.Compact style={{ width: '100%' }}>
                     <Select
                       showSearch
@@ -206,33 +301,25 @@ export default function ExcelUploader({
                         (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
                       }
                     />
-                    {/* Popover de formateo */}
+                    {/* Popover de formateo zfill */}
                     <Popover
                       trigger="click"
-                      title={
-                        <Space>
-                          <SettingOutlined />
-                          <span>Formateo de Variable</span>
-                        </Space>
-                      }
+                      title={<Space><SettingOutlined /><span>Formateo de Variable</span></Space>}
                       content={
                         <div style={{ width: 220 }}>
                           <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
                             Ceros a la izquierda (zfill)
                           </Text>
                           <InputNumber
-                            min={0}
-                            max={20}
+                            min={0} max={20}
                             placeholder="Ancho total (ej. 7)"
                             value={fieldFormats[variable]?.zfill ?? undefined}
                             onChange={(val) => {
                               if (onFieldFormatChange) {
                                 const newFmt: FieldFormat = { ...fieldFormats[variable] };
-                                if (val && val > 0) {
+                                if (val && (val as number) > 0) {
                                   newFmt.zfill = val as number;
-                                } else {
-                                  delete newFmt.zfill;
-                                }
+                                } else { delete newFmt.zfill; }
                                 onFieldFormatChange(variable, newFmt);
                               }
                             }}
@@ -269,6 +356,7 @@ export default function ExcelUploader({
                     </Popover>
                   </Space.Compact>
                 ) : (
+                  /* ── MODO MANUAL ────────────────────────────────────── */
                   <Input
                     placeholder="Escribe el texto fijo a inyectar..."
                     value={customFields[variable] || ''}

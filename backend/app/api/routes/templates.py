@@ -73,6 +73,32 @@ async def create_template(
     return TemplateResponse.model_validate(template)
 
 
+@router.get("/{template_id}/download")
+def download_template(template_id: str, db: Session = Depends(get_db)):
+    """Download the original .docx file of a template."""
+    import io
+    from fastapi.responses import StreamingResponse
+
+    template = TemplateService.get_template(db, template_id)
+    if not template:
+        raise HTTPException(status_code=404, detail="Plantilla no encontrada")
+
+    safe_path = template.file_path.replace("\\", "/")
+
+    try:
+        with open(safe_path, "rb") as f:
+            content = f.read()
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Archivo de plantilla no encontrado en disco")
+
+    safe_name = template.name.replace(" ", "_")
+    return StreamingResponse(
+        io.BytesIO(content),
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{safe_name}.docx"'},
+    )
+
+
 @router.get("/{template_id}/variables")
 def get_template_variables(template_id: str, db: Session = Depends(get_db)):
     """Get the placeholder variables defined in a template."""
@@ -84,6 +110,7 @@ def get_template_variables(template_id: str, db: Session = Depends(get_db)):
     safe_path = template.file_path.replace("\\", "/")
     variables = DocumentService.get_template_variables(safe_path)
     return {"template_id": template_id, "variables": variables}
+
 
 
 @router.put("/{template_id}", response_model=TemplateResponse)
