@@ -2,12 +2,16 @@
  * Docxp — Excel File Uploader Component
  */
 import { useState, useEffect } from 'react';
-import { Upload, Typography, Tag, Space, Card, message, Divider, Row, Col, Select, Input, Radio } from 'antd';
-import { InboxOutlined, CheckCircleOutlined, LinkOutlined, EditOutlined } from '@ant-design/icons';
+import { Upload, Typography, Tag, Space, Card, message, Divider, Row, Col, Select, Input, Radio, Popover, InputNumber, Tooltip } from 'antd';
+import { InboxOutlined, CheckCircleOutlined, LinkOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons';
 import './ExcelUploader.css';
 
 const { Dragger } = Upload;
 const { Text } = Typography;
+
+export interface FieldFormat {
+  zfill?: number; // Relleno con ceros a la izquierda
+}
 
 interface ExcelUploaderProps {
   onFileSelected: (file: File, columns: string[], data?: any, sheetName?: string) => void;
@@ -16,6 +20,8 @@ interface ExcelUploaderProps {
   templateVariables?: string[];
   customFields?: Record<string, string>;
   onCustomFieldChange?: (key: string, value: string) => void;
+  fieldFormats?: Record<string, FieldFormat>;
+  onFieldFormatChange?: (key: string, fmt: FieldFormat) => void;
 }
 
 export default function ExcelUploader({ 
@@ -24,7 +30,9 @@ export default function ExcelUploader({
   columns = [], 
   templateVariables = [],
   customFields = {},
-  onCustomFieldChange
+  onCustomFieldChange,
+  fieldFormats = {},
+  onFieldFormatChange,
 }: ExcelUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [localFile, setLocalFile] = useState<File | null>(null);
@@ -184,19 +192,82 @@ export default function ExcelUploader({
 
               <Col xs={24} sm={11}>
                 {mode === 'excel' && hasExcel ? (
-                  <Select
-                    showSearch
-                    allowClear
-                    placeholder="Selecciona columna del Excel..."
-                    options={columns?.map(c => ({ label: c, value: c })) || []}
-                    value={columns.includes(customFields[variable] || '') ? customFields[variable] : undefined}
-                    onChange={(val) => onCustomFieldChange(variable, val || '')}
-                    style={{ width: '100%' }}
-                    size="large"
-                    filterOption={(input, option) =>
-                      (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
-                    }
-                  />
+                  <Space.Compact style={{ width: '100%' }}>
+                    <Select
+                      showSearch
+                      allowClear
+                      placeholder="Selecciona columna del Excel..."
+                      options={columns?.map(c => ({ label: c, value: c })) || []}
+                      value={columns.includes(customFields[variable] || '') ? customFields[variable] : undefined}
+                      onChange={(val) => onCustomFieldChange(variable, val || '')}
+                      style={{ flex: 1 }}
+                      size="large"
+                      filterOption={(input, option) =>
+                        (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                      }
+                    />
+                    {/* Popover de formateo */}
+                    <Popover
+                      trigger="click"
+                      title={
+                        <Space>
+                          <SettingOutlined />
+                          <span>Formateo de Variable</span>
+                        </Space>
+                      }
+                      content={
+                        <div style={{ width: 220 }}>
+                          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 8 }}>
+                            Ceros a la izquierda (zfill)
+                          </Text>
+                          <InputNumber
+                            min={0}
+                            max={20}
+                            placeholder="Ancho total (ej. 7)"
+                            value={fieldFormats[variable]?.zfill ?? undefined}
+                            onChange={(val) => {
+                              if (onFieldFormatChange) {
+                                const newFmt: FieldFormat = { ...fieldFormats[variable] };
+                                if (val && val > 0) {
+                                  newFmt.zfill = val as number;
+                                } else {
+                                  delete newFmt.zfill;
+                                }
+                                onFieldFormatChange(variable, newFmt);
+                              }
+                            }}
+                            style={{ width: '100%' }}
+                            addonAfter="dígitos"
+                          />
+                          {fieldFormats[variable]?.zfill && (
+                            <Text type="secondary" style={{ fontSize: 11, marginTop: 6, display: 'block' }}>
+                              Ejemplo: <code style={{ color: '#22C55E' }}>{String(1).padStart(fieldFormats[variable]!.zfill!, '0')}</code>
+                            </Text>
+                          )}
+                        </div>
+                      }
+                    >
+                      <Tooltip title="Formateo de columna">
+                        <button
+                          style={{
+                            background: fieldFormats[variable]?.zfill ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.05)',
+                            border: `1px solid ${fieldFormats[variable]?.zfill ? '#22C55E' : '#333'}`,
+                            borderLeft: 'none',
+                            borderRadius: '0 6px 6px 0',
+                            padding: '0 12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            color: fieldFormats[variable]?.zfill ? '#22C55E' : '#888',
+                            fontSize: 16,
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          <SettingOutlined spin={false} />
+                        </button>
+                      </Tooltip>
+                    </Popover>
+                  </Space.Compact>
                 ) : (
                   <Input
                     placeholder="Escribe el texto fijo a inyectar..."

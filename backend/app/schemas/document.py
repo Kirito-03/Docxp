@@ -1,5 +1,14 @@
 from datetime import datetime
+from typing import Any
 from pydantic import BaseModel, Field
+
+
+class FieldFormat(BaseModel):
+    """Formatting rules for a single template variable."""
+    zfill: int | None = Field(default=None, description="Pad with leading zeros to this total width")
+    # Aquí se pueden agregar más tipos de formato en el futuro:
+    # upper: bool | None = None
+    # prefix: str | None = None
 
 
 class DocumentBase(BaseModel):
@@ -23,6 +32,10 @@ class GenerateRequest(BaseModel):
         default=None,
         description="Additional key-value pairs to inject into the template",
     )
+    field_formats: dict[str, FieldFormat] | None = Field(
+        default=None,
+        description="Formatting rules per variable (e.g. zfill)",
+    )
 
 
 class PreviewRequest(BaseModel):
@@ -32,6 +45,7 @@ class PreviewRequest(BaseModel):
     excel_data: dict | None = None
     ai_prompt: str | None = None
     custom_fields: dict | None = None
+    field_formats: dict[str, FieldFormat] | None = None
 
 
 class DocumentResponse(BaseModel):

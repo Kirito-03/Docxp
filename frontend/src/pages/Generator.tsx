@@ -28,6 +28,7 @@ import DocumentPreview from '../components/DocumentPreview/DocumentPreview';
 import { useDocumentPreview } from '../hooks/useDocumentPreview';
 import { generateDocument, downloadDocument, getTemplateVariables, batchGenerateDocumentForm } from '../services/api';
 import type { Template } from '../types';
+import type { FieldFormat } from '../components/ExcelUploader/ExcelUploader';
 
 const { TextArea } = Input;
 const { Title, Text } = Typography;
@@ -45,6 +46,7 @@ export default function Generator() {
   // Variable mapping state
   const [templateVariables, setTemplateVariables] = useState<string[]>([]);
   const [customFields, setCustomFields] = useState<Record<string, string>>({});
+  const [fieldFormats, setFieldFormats] = useState<Record<string, FieldFormat>>({});
 
   // Excel Data State
   const [excelData, setExcelData] = useState<any>(null);
@@ -85,6 +87,10 @@ export default function Generator() {
 
   const handleCustomFieldChange = (key: string, value: string) => {
     setCustomFields(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleFieldFormatChange = (key: string, fmt: FieldFormat) => {
+    setFieldFormats(prev => ({ ...prev, [key]: fmt }));
   };
 
   const resolveCustomFields = (): Record<string, string> => {
@@ -154,9 +160,10 @@ export default function Generator() {
       const doc = await generateDocument({
         template_id: selectedTemplate.id,
         title: docTitle,
-        excel_data: currentExcelData, // Usamos la primera fila del excel si se subió uno
+        excel_data: currentExcelData,
         ai_prompt: aiPrompt,
         custom_fields: resolveCustomFields(),
+        field_formats: fieldFormats,
       });
       setGeneratedDocId(doc.id);
       message.success('¡Documento generado exitosamente!');
@@ -188,6 +195,8 @@ export default function Generator() {
       formData.append('title', docTitle);
       if (aiPrompt) formData.append('ai_prompt', aiPrompt);
       formData.append('custom_fields', JSON.stringify(customFields));
+      // Enviar field_formats para que el backend aplique zfill u otros formatos
+      formData.append('field_formats', JSON.stringify(fieldFormats));
       if (selectedRowKeys.length > 0) {
         formData.append('selected_rows', JSON.stringify(selectedRowKeys));
       }
@@ -223,6 +232,7 @@ export default function Generator() {
     setExcelData(null);
     setSelectedSheet(null);
     setSelectedRowKeys([]);
+    setFieldFormats({});
     setAiPrompt('');
     setDocTitle('');
     setGeneratedDocId(null);
@@ -300,6 +310,8 @@ export default function Generator() {
                 templateVariables={templateVariables}
                 customFields={customFields}
                 onCustomFieldChange={handleCustomFieldChange}
+                fieldFormats={fieldFormats}
+                onFieldFormatChange={handleFieldFormatChange}
               />
 
               {excelData && excelData.data && selectedSheet && excelData.data[selectedSheet] && (

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.models.document import Document
 from app.schemas.document import (
+    FieldFormat,
     GenerateRequest,
     PreviewRequest,
     DocumentResponse,
@@ -18,6 +19,16 @@ from app.services.excel_service import ExcelService
 from app.services.template_service import TemplateService
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
+
+
+def apply_field_format(value: str, fmt: FieldFormat | None) -> str:
+    """Apply formatting rules to a string value before injecting into template."""
+    if fmt is None:
+        return value
+    if fmt.zfill is not None and fmt.zfill > 0:
+        # Preserve only the numeric part for zfill, then pad
+        value = value.zfill(fmt.zfill)
+    return value
 
 
 @router.post("/preview")
@@ -64,12 +75,11 @@ async def preview_document(data: PreviewRequest, db: Session = Depends(get_db)):
             first_row = rows[0]
             template_context["datos"] = rows
             
-            # Apply custom field mappings using the first row
+            # Apply custom field mappings + formatting using the first row
             for var_name, col_name in (data.custom_fields or {}).items():
-                if col_name in first_row:
-                    template_context[var_name] = str(first_row[col_name])
-                else:
-                    template_context[var_name] = col_name
+                raw = str(first_row[col_name]) if col_name in first_row else col_name
+                fmt = (data.field_formats or {}).get(var_name)
+                template_context[var_name] = apply_field_format(raw, fmt)
         else:
             template_context.update(data.custom_fields or {})
     else:
@@ -155,12 +165,11 @@ async def generate_document(data: GenerateRequest, db: Session = Depends(get_db)
                 first_row = rows[0]
                 template_context["datos"] = rows
                 
-                # Apply custom field mappings using the first row
+                # Apply custom field mappings + formatting using the first row
                 for var_name, col_name in (data.custom_fields or {}).items():
-                    if col_name in first_row:
-                        template_context[var_name] = str(first_row[col_name])
-                    else:
-                        template_context[var_name] = col_name
+                    raw = str(first_row[col_name]) if col_name in first_row else col_name
+                    fmt = (data.field_formats or {}).get(var_name)
+                    template_context[var_name] = apply_field_format(raw, fmt)
             else:
                 template_context.update(data.custom_fields or {})
         else:
@@ -246,6 +255,7 @@ async def batch_generate_document(
     ai_prompt: str = Form(None),
     selected_rows: str = Form(None),
     sheet_name: str = Form(None),
+    field_formats: str = Form("{}"),
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
@@ -292,10 +302,22 @@ async def batch_generate_document(
         raise HTTPException(status_code=400, detail="No hay filas seleccionadas para procesar")
 
     # Parse custom fields
+    # Parse custom fields and field_formats
     try:
         custom_fields_dict = json.loads(custom_fields)
     except Exception:
         custom_fields_dict = {}
+
+    field_formats_raw: dict = {}
+    try:
+        field_formats_raw = json.loads(field_formats)
+    except Exception:
+        field_formats_raw = {}
+    # Convert raw dicts to FieldFormat objects
+    field_formats_dict = {
+        k: FieldFormat(**v) if isinstance(v, dict) else FieldFormat()
+        for k, v in field_formats_raw.items()
+    }
 
     zip_buffer = io.BytesIO()
     seen_names = {}
@@ -305,11 +327,9 @@ async def batch_generate_document(
             # Build context. `custom_fields_dict` contains mapping from template variable to Excel column name
             row_context = {}
             for var_name, col_name in custom_fields_dict.items():
-                if col_name in row:
-                    row_context[var_name] = str(row[col_name])
-                else:
-                    # If manual value or exact match
-                    row_context[var_name] = col_name
+                raw = str(row[col_name]) if col_name in row else col_name
+                fmt = field_formats_dict.get(var_name)
+                row_context[var_name] = apply_field_format(raw, fmt)
                     
             template_context = {
                 "titulo": title,

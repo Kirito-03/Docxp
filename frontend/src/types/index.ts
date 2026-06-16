@@ -58,12 +58,17 @@ export interface DocumentListResponse {
   total: number;
 }
 
+export interface FieldFormat {
+  zfill?: number;
+}
+
 export interface GenerateRequest {
   template_id: string;
   title: string;
   excel_data?: ExcelData | null;
   ai_prompt?: string;
   custom_fields?: Record<string, string>;
+  field_formats?: Record<string, FieldFormat>;
 }
 
 export interface PreviewRequest {
@@ -71,6 +76,7 @@ export interface PreviewRequest {
   excel_data?: ExcelData | null;
   ai_prompt?: string;
   custom_fields?: Record<string, string>;
+  field_formats?: Record<string, FieldFormat>;
 }
 
 export interface PreviewResponse {
