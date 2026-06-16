@@ -420,6 +420,6 @@ Este proyecto está bajo la licencia **MIT**. Consulta el archivo `LICENSE` para
 
 ---
 
-*Hecho con ⚡ por Kirito · 2025*
+*Hecho con ⚡ por Kirito · 2026*
 
 </div>
